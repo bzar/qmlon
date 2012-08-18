@@ -1,13 +1,9 @@
 #ifndef QMLON_HH
 #define QMLON_HH
 
-#include <iostream>
-#include <sstream>
-#include <fstream>
-#include <string>
-#include <cctype>
-#include <algorithm>
 #include <cstdlib>
+#include <iostream>
+#include <string>
 #include <map>
 #include <vector>
 #include <stdexcept>
@@ -38,10 +34,6 @@ namespace qmlon
     virtual List const& asList() const { throw std::runtime_error("Invalid use of QMLON value. Value type is not list!"); }
 
     std::string str() const;
-
-  private:
-    static std::string const NULL_STRING;
-    static List const NULL_LIST;
   };
 
   class Object

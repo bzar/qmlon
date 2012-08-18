@@ -1,29 +1,51 @@
 #include "qmlon.h"
 #include <iostream>
+#include <fstream>
 
 class Frame
 {
 public:
+  Frame() : position(), hotspot(), size() {}
   struct Position
   {
+    Position() : x(0), y(0) {}
     int x;
     int y;
   };
 
   struct Size
   {
+    Size() : width(0), height(0) {}
     int width;
     int height;
   };
 
+  Position getPosition() const { return position; }
+  Position getHotspot() const { return hotspot; }
+  Size getSize() const { return size; }
+
+  void setPosition(Position const& value) { position = value; }
+  void setHotspot(Position const& value) { hotspot = value; }
+  void setSize(Size const& value) { size = value; }
+
+private:
   Position position;
-  Size size;
   Position hotspot;
+  Size size;
 };
 
 class Animation
 {
 public:
+  Animation() : id(), frames() {}
+
+  std::string const& getId() const { return id; }
+  std::vector<Frame> const& getFrames() const { return frames; };
+
+  void setId(std::string const& value) { id = value; }
+  void addFrame(Frame const& value) { frames.push_back(value); }
+
+private:
   std::string id;
   std::vector<Frame> frames;
 };
@@ -31,6 +53,15 @@ public:
 class Sprite
 {
 public:
+  Sprite() : id(), animations() {}
+
+  std::string const& getId() const { return id; }
+  std::map<std::string, Animation> const& getAnimations() const { return animations; };
+
+  void setId(std::string const& value) { id = value; }
+  void addAnimation(Animation const& value) { animations[value.getId()] = value; }
+
+private:
   std::string id;
   std::map<std::string, Animation> animations;
 };
@@ -38,6 +69,15 @@ public:
 class SpriteSheet
 {
 public:
+  SpriteSheet() : image(), sprites() {}
+
+  std::string const& getImage() const { return image; }
+  std::map<std::string, Sprite> const& getSprites() const { return sprites; };
+
+  void setImage(std::string const& value) { image = value; }
+  void addSprite(Sprite const& value) { sprites[value.getId()] = value; }
+
+private:
   std::string image;
   std::map<std::string, Sprite> sprites;
 };
@@ -59,18 +99,30 @@ int main(int argc, char** argv)
   });
 
   qmlon::Initializer<Frame> initFrame({
-    {"position", [&](Frame& f, qmlon::Value::Reference v) { initPosition.init(f.position, v); }},
-    {"hotspot", [&](Frame& f, qmlon::Value::Reference v) { initPosition.init(f.hotspot, v); }},
-    {"size", [&](Frame& f, qmlon::Value::Reference v) { initSize.init(f.size, v); }}
+    {"position", [&](Frame& f, qmlon::Value::Reference v) {
+      Frame::Position p;
+      initPosition.init(p, v);
+      f.setPosition(p);
+    }},
+    {"hotspot", [&](Frame& f, qmlon::Value::Reference v) {
+      Frame::Position p;
+      initPosition.init(p, v);
+      f.setHotspot(p);
+    }},
+    {"size", [&](Frame& f, qmlon::Value::Reference v) {
+      Frame::Size s;
+      initSize.init(s, v);
+      f.setSize(s);
+    }}
   });
 
   qmlon::Initializer<Animation> initAnimation({
-    {"id", [](Animation& a, qmlon::Value::Reference v) { a.id = v->asString(); }}
+    {"id", [](Animation& a, qmlon::Value::Reference v) { a.setId(v->asString()); }}
   }, {
     {"Frame", [&](Animation& a, qmlon::Object* o) {
       Frame f;
       initFrame.init(f, o);
-      a.frames.push_back(f);
+      a.addFrame(f);
     }},
     {"Frames", [&](Animation& a, qmlon::Object* o) {
       int count = o->hasProperty("count") ? o->getProperty("count")->asInteger() : 1;
@@ -88,30 +140,32 @@ int main(int argc, char** argv)
       {
         Frame f;
         initFrame.init(f, o);
-        f.position.x += i * dx;
-        f.position.y += i * dy;
-        a.frames.push_back(f);
+        Frame::Position p = f.getPosition();
+        p.x += i * dx;
+        p.y += i * dy;
+        f.setPosition(p);
+        a.addFrame(f);
       }
     }}
   });
 
   qmlon::Initializer<Sprite> initSprite({
-    {"id", [](Sprite& s, qmlon::Value::Reference v) { s.id = v->asString(); }}
+    {"id", [](Sprite& s, qmlon::Value::Reference v) { s.setId(v->asString()); }}
   }, {
     {"Animation", [&](Sprite& s, qmlon::Object* o) {
       Animation a;
       initAnimation.init(a, o);
-      s.animations[a.id] = a;
+      s.addAnimation(a);
     }}
   });
 
   qmlon::Initializer<SpriteSheet> initSheet({
-    {"image", [](SpriteSheet& sheet, qmlon::Value::Reference value) { sheet.image = value->asString(); }}
+    {"image", [](SpriteSheet& sheet, qmlon::Value::Reference value) { sheet.setImage(value->asString()); }}
   }, {
     {"Sprite", [&](SpriteSheet& sheet, qmlon::Object* obj) {
       Sprite sprite;
       initSprite.init(sprite, obj);
-      sheet.sprites[sprite.id] = sprite;
+      sheet.addSprite(sprite);
     }}
   });
 
@@ -125,25 +179,25 @@ int main(int argc, char** argv)
   initSheet.init(sheet, value);
 
   // Print results
-  std::cout << "Sheet image: " << sheet.image << std::endl;
-  std::cout << "Number of sprites: " << sheet.sprites.size() << std::endl;
+  std::cout << "Sheet image: " << sheet.getImage() << std::endl;
+  std::cout << "Number of sprites: " << sheet.getSprites().size() << std::endl;
 
-  for(auto i : sheet.sprites)
+  for(auto i : sheet.getSprites())
   {
     Sprite& s = i.second;
-    std::cout << "  Sprite " << s.id << std::endl;
+    std::cout << "  Sprite " << s.getId() << std::endl;
 
-    for(auto j : s.animations)
+    for(auto j : s.getAnimations())
     {
       Animation& a = j.second;
-      std::cout << "    Animation " << a.id << std::endl;
+      std::cout << "    Animation " << a.getId() << std::endl;
 
-      for(auto f : a.frames)
+      for(auto f : a.getFrames())
       {
         std::cout << "      Frame" << std::endl;
-        std::cout << "        position: (" << f.position.x << ", " << f.position.y << ")"<< std::endl;
-        std::cout << "        hotspot:  (" << f.hotspot.x << ", " << f.hotspot.y << ")"<< std::endl;
-        std::cout << "        size:      " << f.size.width << "x" << f.size.height << std::endl;
+        std::cout << "        position: (" << f.getPosition().x << ", " << f.getPosition().y << ")"<< std::endl;
+        std::cout << "        hotspot:  (" << f.getHotspot().x << ", " << f.getHotspot().y << ")"<< std::endl;
+        std::cout << "        size:      " << f.getSize().width << "x" << f.getSize().height << std::endl;
       }
     }
   }

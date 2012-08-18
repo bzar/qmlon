@@ -1,4 +1,6 @@
 #include "qmlon.h"
+#include <cctype>
+#include <sstream>
 
 namespace qmlon
 {
@@ -8,9 +10,6 @@ namespace qmlon
   void printObject(Object* object, std::ostream& out = std::cout, int level = 0);
   void printValue(Value const& value, std::ostream& out = std::cout, int level = 0);
 }
-
-std::string const qmlon::Value::NULL_STRING = "";
-qmlon::Value::List const qmlon::Value::NULL_LIST = qmlon::Value::List();
 
 
 std::string qmlon::Value::str() const
