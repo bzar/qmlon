@@ -9,11 +9,13 @@ include_directories(include)
 add_library(qmlon ${SOURCES})
 
 add_executable(test_spritesheet test/spritesheet.cpp)
-add_executable(test_schema test/schema.cpp)
 target_link_libraries(test_spritesheet qmlon)
+
+add_executable(test_schema test/schema.cpp)
+target_link_libraries(test_schema qmlon)
 
 install(TARGETS qmlon DESTINATION lib)
 install(DIRECTORY include DESTINATION include)
 
 file(COPY test/sprite.sheet DESTINATION .)
-
+file(COPY schema/schema.qmlon DESTINATION .)
