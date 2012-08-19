@@ -35,7 +35,7 @@ To use the initializer part you need to define `qmlon::Initializer` objects for 
     qmlon::Initializer<MyDocumentType> initDocument({
       {"integerProp", [](MyDocumentType& doc, qmlon::Value::Reference value) { doc.setIntegerProp(value->asInteger()); }}
     }, {
-      {"ChildObject", [&](SpriteSheet& sheet, qmlon::Object* obj) { sheet.addSprite(qmlon::create(obj, initChild)); }}
+      {"ChildObject", [&](MyDocumentType& doc, qmlon::Object* obj) { doc.addChild(qmlon::create(obj, initChild)); }}
     });
 
 The `qmlon::create` creates and initializes a variable of the initializer's template type. It only works for types that are default constructible. Otherwise you'd first create the object and then use `qmlon::Initializer::init` to set the properties and children. When you've created the initializers you can just request the root type `qmlon::Initializer<MyDocumentType>` to create and initialize the data structures using `qmlon::create` or `qmlon::Initializer::init` like above.
