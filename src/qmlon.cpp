@@ -46,7 +46,7 @@ qmlon::Value::List qmlon::readList(std::istream& stream)
 
   while(stream.peek() != ']')
   {
-    if(isblank(stream.peek()) || stream.peek() == ',')
+    if(isspace(stream.peek()) || stream.peek() == ',')
     {
       stream.get(c);
     }
