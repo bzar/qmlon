@@ -8,6 +8,7 @@
 #include <vector>
 #include <stdexcept>
 #include <memory>
+#include <type_traits>
 
 namespace qmlon
 {
@@ -120,8 +121,8 @@ namespace qmlon
     Initializer(std::map<std::string, std::function<void(T&, Value::Reference)>> propertySetters = std::map<std::string, std::function<void(T&, Value::Reference)>>(),
                 std::map<std::string, std::function<void(T&, Object*)>> childSetters = std::map<std::string, std::function<void(T&, Object*)>>());
 
-    void init(T& t, Object* obj);
-    void init(T& t, Value::Reference value);
+    T& init(T& t, Object* obj);
+    T& init(T& t, Value::Reference value);
 
     static void initialize(T& t, Object* obj,
                           std::map<std::string, std::function<void(T&, Value::Reference)>> propertySetters,
@@ -141,15 +142,32 @@ namespace qmlon
   {}
 
   template<class T>
-  void Initializer<T>::init(T& t, Object* obj)
+  T create(Object* obj, Initializer<T>& initializer)
   {
-    initialize(t, obj, propertySetters, childSetters);
+    T t;
+    initializer.init(t, obj);
+    return t;
   }
 
   template<class T>
-  void Initializer<T>::init(T& t, Value::Reference value)
+  T create(Value::Reference value, Initializer<T>& initializer)
   {
-    initialize(t, value->asObject(), propertySetters, childSetters);
+    T t;
+    initializer.init(t, value);
+    return t;
+  }
+
+  template<class T>
+  T& Initializer<T>::init(T& t, Object* obj)
+  {
+    initialize(t, obj, propertySetters, childSetters);
+    return t;
+  }
+
+  template<class T>
+  T& Initializer<T>::init(T& t, Value::Reference value)
+  {
+    return init(t, value->asObject());
   }
 
   template<class T>
