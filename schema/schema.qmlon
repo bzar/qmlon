@@ -17,14 +17,20 @@ Schema {
       Property {
         name: "type"
         optional: true
-        types: [Object{type: "Boolean"}, Object{type: "Integer"}, Object{type: "Float"}, Object{type: "String"}, Object{type: "List"}, Object{type: "Object"}]
-      }
-      Property {
-        name: "types"
-        optional: true
-        type: List {
-          types: [Object{type: "Boolean"}, Object{type: "Integer"}, Object{type: "Float"}, Object{type: "String"}, Object{type: "List"}, Object{type: "Object"}]
-        }
+        type: [
+          Object{type: "Boolean"}, Object{type: "Integer"}, Object{type: "Float"},
+          Object{type: "String"}, Object{type: "List"}, Object{type: "Object"},
+          List {
+            types: [
+              Object{type: "Boolean"},
+              Object{type: "Integer"},
+              Object{type: "Float"},
+              Object{type: "String"},
+              Object{type: "List"},
+              Object{type: "Object"}
+            ]
+          }
+        ]
       }
     ]
   }
