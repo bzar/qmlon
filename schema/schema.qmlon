@@ -21,7 +21,7 @@ Schema {
           Object{type: "Boolean"}, Object{type: "Integer"}, Object{type: "Float"},
           Object{type: "String"}, Object{type: "List"}, Object{type: "Object"},
           List {
-            types: [
+            type: [
               Object{type: "Boolean"},
               Object{type: "Integer"},
               Object{type: "Float"},
@@ -51,7 +51,7 @@ Schema {
         name: "properties"
         optional: true
         type: List {
-          types: [Object{type: "Property"}]
+          type: Object{type: "Property"}
         }
       },
 
@@ -59,7 +59,7 @@ Schema {
         name: "children"
         optional: true
         type: List {
-          types: [Object{type: "Child"}]
+          type: Object{type: "Child"}
         }
       }
     ]
@@ -91,7 +91,7 @@ Schema {
 
   List {
     properties: [
-      Property { name: "types", type: List{types: [Object{type: "Boolean"}, Object{type: "Integer"}, Object{type: "Float"}, Object{type: "String"}, Object{type: "List"}, Object{type: "Object"}]}, optional: true },
+      Property { name: "type", type: Object{type: "Boolean"}, Object{type: "Integer"}, Object{type: "Float"}, Object{type: "String"}, Object{type: "List"}, Object{type: "Object"}, List{types: [Object{type: "Boolean"}, Object{type: "Integer"}, Object{type: "Float"}, Object{type: "String"}, Object{type: "List"}, Object{type: "Object"}]}, optional: true },
       Property { name: "min", type: Integer{}, optional: true },
       Property { name: "max", type: Integer{}, optional: true }
     ]

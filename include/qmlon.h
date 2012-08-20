@@ -121,6 +121,9 @@ namespace qmlon
     Initializer(std::map<std::string, std::function<void(T&, Value::Reference)>> propertySetters = std::map<std::string, std::function<void(T&, Value::Reference)>>(),
                 std::map<std::string, std::function<void(T&, Object*)>> childSetters = std::map<std::string, std::function<void(T&, Object*)>>());
 
+    void addPropertySetter(std::string const& name, std::function<void(T&, Value::Reference)> setter);
+    void addChildSetter(std::string const& name, std::function<void(T&, Object*)> setter);
+
     T& init(T& t, Object* obj);
     T& init(T& t, Value::Reference value);
 
@@ -140,6 +143,18 @@ namespace qmlon
                               std::map<std::string, std::function<void(T&, Object*)>> childSetters) :
     propertySetters(propertySetters), childSetters(childSetters)
   {}
+
+  template<class T>
+  void Initializer<T>::addPropertySetter(std::string const& name, std::function<void(T&, Value::Reference)> setter)
+  {
+    propertySetters[name] = setter;
+  }
+
+  template<class T>
+  void Initializer<T>::addChildSetter(std::string const& name, std::function<void(T&, Object*)> setter)
+  {
+    childSetters[name] = setter;
+  }
 
   template<class T>
   T create(Object* obj, Initializer<T>& initializer)
@@ -190,6 +205,14 @@ namespace qmlon
       if(setter != childSetters.end())
       {
         (setter->second)(t, child.get());
+      }
+      else
+      {
+        auto defaultSetter = childSetters.find("");
+        if(defaultSetter != childSetters.end())
+        {
+          (defaultSetter->second)(t, child.get());
+        }
       }
     }
   }
