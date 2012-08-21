@@ -48,7 +48,7 @@ namespace qmlon
     public:
       Child(Schema* schema) : schema(schema),  min(0), max(0), type() {}
 
-      bool validate(qmlon::Object const* value) const;
+      bool validate(qmlon::Object::Reference value) const;
 
       Optional<int> getMin() const { return min; }
       Optional<int> getMax() const { return max; }

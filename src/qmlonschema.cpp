@@ -175,32 +175,21 @@ qmlon::Schema::Schema(qmlon::Value::Reference value) :
   initialize(*this, value);
 }
 
-bool qmlon::Schema::Child::validate(qmlon::Object const* value) const
+bool qmlon::Schema::Child::validate(qmlon::Object::Reference object) const
 {
   auto objectType = schema->getObjects().find(type);
   if(objectType == schema->getObjects().end())
     return false;
 
-  int n = 0;
-  for(qmlon::Object::Reference object : value->children)
+  if(!objectType->second.getIsInterface() && object->type != type)
   {
-    if(!objectType->second.getIsInterface() && object->type != type)
-    {
-      continue;
-    }
-
-    n += 1;
-    if(max.set && max.value < n)
-      return false;
-
-    if(!objectType->second.validate(object.get()))
-    {
-      return false;
-    }
+    return false;
   }
 
-  if(min.set && min.value > n)
-      return false;
+  if(!objectType->second.validate(object.get()))
+  {
+    return false;
+  }
 
   return true;
 }
@@ -240,9 +229,36 @@ bool qmlon::Schema::Object::validate(qmlon::Object const* value) const
       return false;
   }
 
+  std::map<std::string, int> n;
   for(Child const& child : children)
   {
-    if(!child.validate(value))
+    n[child.getType()] = 0;
+  }
+
+  for(qmlon::Object::Reference object : value->children)
+  {
+    bool valid = false;
+    for(Child const& child : children)
+    {
+      if(child.validate(object))
+      {
+        valid = true;
+        n[child.getType()] += 1;
+
+        if(child.getMax().set && child.getMax().value < n[child.getType()])
+          return false;
+
+        break;
+      }
+    }
+
+    if(!valid)
+      return false;
+  }
+
+  for(Child const& child : children)
+  {
+    if(child.getMin().set && child.getMin().value > n[child.getType()])
       return false;
   }
 
