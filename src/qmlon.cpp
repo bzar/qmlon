@@ -151,7 +151,7 @@ qmlon::Object::Reference qmlon::readObject(std::string const& type, std::istream
 
   while(stream.get(c) && c != '}')
   {
-    if(std::isspace(c))
+    if(std::isspace(c) || c == ',')
     {
       continue;
     }

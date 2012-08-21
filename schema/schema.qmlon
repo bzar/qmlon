@@ -12,7 +12,7 @@ Schema {
 
   Property {
     properties: [
-      Property { name: "name" type: String{} },
+      Property { name: "name", type: String{} },
       Property { name: "optional", type: Boolean{}, optional: true },
       Property {
         name: "type"
@@ -91,7 +91,7 @@ Schema {
 
   List {
     properties: [
-      Property { name: "type", type: Object{type: "Boolean"}, Object{type: "Integer"}, Object{type: "Float"}, Object{type: "String"}, Object{type: "List"}, Object{type: "Object"}, List{types: [Object{type: "Boolean"}, Object{type: "Integer"}, Object{type: "Float"}, Object{type: "String"}, Object{type: "List"}, Object{type: "Object"}]}, optional: true },
+      Property { name: "type", type: [Object{type: "Boolean"}, Object{type: "Integer"}, Object{type: "Float"}, Object{type: "String"}, Object{type: "List"}, Object{type: "Object"}, List{type: [Object{type: "Boolean"}, Object{type: "Integer"}, Object{type: "Float"}, Object{type: "String"}, Object{type: "List"}, Object{type: "Object"}]}], optional: true },
       Property { name: "min", type: Integer{}, optional: true },
       Property { name: "max", type: Integer{}, optional: true }
     ]

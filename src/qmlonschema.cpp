@@ -59,7 +59,7 @@ qmlon::Schema& qmlon::Schema::initialize(Schema& schema, qmlon::Value::Reference
     }
     else if(o->type == "Object")
     {
-      ObjectValue* ov = new ObjectValue;
+      ObjectValue* ov = new ObjectValue(&schema);
       ovi.init(*ov, o);
       result.reset(ov);
     }
@@ -71,7 +71,7 @@ qmlon::Schema& qmlon::Schema::initialize(Schema& schema, qmlon::Value::Reference
     }
 
     if(!result)
-      throw std::runtime_error("ERROR: Not a Schema type");
+      throw SyntaxError("ERROR: Not a Schema type");
 
     return result;
   });
@@ -95,6 +95,7 @@ qmlon::Schema& qmlon::Schema::initialize(Schema& schema, qmlon::Value::Reference
     {"name", [](Property& x, qmlon::Value::Reference v) { x.setName(v->asString()); }},
     {"optional", [](Property& x, qmlon::Value::Reference v) { x.setOptional(v->asBoolean()); }},
     {"type", [&](Property& x, qmlon::Value::Reference v) {
+
       if(v->isList())
       {
         qmlon::Value::List l = v->asList();
@@ -106,6 +107,10 @@ qmlon::Schema& qmlon::Schema::initialize(Schema& schema, qmlon::Value::Reference
       else if(v->isObject())
       {
         x.addValidType(createValue(v));
+      }
+      else
+      {
+        throw SyntaxError("ERROR: Property type is invalid!");
       }
     }},
   });
@@ -122,14 +127,18 @@ qmlon::Schema& qmlon::Schema::initialize(Schema& schema, qmlon::Value::Reference
       qmlon::Value::List l = v->asList();
       for(qmlon::Value::Reference vr : l)
       {
-        x.addProperty(qmlon::create(vr, pi));
+        Property property;
+        pi.init(property, vr);
+        x.addProperty(property);
       }
     }},
     {"children", [&](Object& x, qmlon::Value::Reference v) {
       qmlon::Value::List l = v->asList();
       for(qmlon::Value::Reference vr : l)
       {
-        x.addChild(qmlon::create(vr, ci));
+        Child child(&schema);
+        ci.init(child, vr);
+        x.addChild(child);
       }
     }}
   });
@@ -138,6 +147,7 @@ qmlon::Schema& qmlon::Schema::initialize(Schema& schema, qmlon::Value::Reference
     {"root", [](Schema& x, qmlon::Value::Reference v) { x.setRoot(v->asString()); }}
   }, {
     {"", [&](Schema& x, qmlon::Object* obj) {
+
       Object o = qmlon::create(obj, oi);
       o.setType(obj->type);
       x.addObject(o);
@@ -165,11 +175,76 @@ qmlon::Schema::Schema(qmlon::Value::Reference value) :
   initialize(*this, value);
 }
 
+bool qmlon::Schema::Child::validate(qmlon::Object const* value) const
+{
+  auto objectType = schema->getObjects().find(type);
+  if(objectType == schema->getObjects().end())
+    return false;
+
+  int n = 0;
+  for(qmlon::Object::Reference object : value->children)
+  {
+    if(!objectType->second.getIsInterface() && object->type != type)
+    {
+      continue;
+    }
+
+    n += 1;
+    if(max.set && max.value < n)
+      return false;
+
+    if(!objectType->second.validate(object.get()))
+    {
+      return false;
+    }
+  }
+
+  if(min.set && min.value > n)
+      return false;
+
+  return true;
+}
+
+bool qmlon::Schema::Property::validate(qmlon::Object const* value) const
+{
+  auto p = value->properties.find(name);
+  if(p == value->properties.end())
+  {
+    if(optional.set && optional.value)
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
+
+  for(qmlon::Schema::Value::Reference validType : validTypes)
+  {
+    if(validType->validate(p->second))
+      return true;
+  }
+
+  return false;
+}
+
 bool qmlon::Schema::Object::validate(qmlon::Object const* value) const
 {
   if(!isInterface && value->type != type)
     return false;
 
+  for(Property const& property : properties)
+  {
+    if(!property.validate(value))
+      return false;
+  }
+
+  for(Child const& child : children)
+  {
+    if(!child.validate(value))
+      return false;
+  }
 
   return true;
 }
@@ -243,5 +318,24 @@ bool qmlon::Schema::ObjectValue::validate(qmlon::Value::Reference const& value) 
   if(!type.set)
     return true;
 
-  return true;
+  auto object = schema->getObjects().find(type.value);
+  if(object == schema->getObjects().end())
+    return false;
+
+  return object->second.validate(value->asObject());
+}
+
+bool qmlon::Schema::validate(qmlon::Value::Reference const& value) const
+{
+  if(root.empty())
+    return false;
+
+  if(!value->isObject())
+    return false;
+
+  auto rootObject = objects.find(root);
+  if(rootObject == objects.end())
+    return false;
+
+  return rootObject->second.validate(value->asObject());
 }

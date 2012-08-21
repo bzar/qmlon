@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <stdexcept>
 
 namespace qmlon
 {
@@ -16,6 +17,12 @@ namespace qmlon
 
     Schema();
     Schema(qmlon::Value::Reference value);
+
+    class SyntaxError : public std::runtime_error
+    {
+    public:
+      SyntaxError(std::string const& message) : std::runtime_error(message) {}
+    };
 
     template<typename T>
     struct Optional
@@ -39,7 +46,10 @@ namespace qmlon
     class Child
     {
     public:
-      Child() : min(0), max(0), type() {}
+      Child(Schema* schema) : schema(schema),  min(0), max(0), type() {}
+
+      bool validate(qmlon::Object const* value) const;
+
       Optional<int> getMin() const { return min; }
       Optional<int> getMax() const { return max; }
       std::string getType() const { return type; }
@@ -49,6 +59,7 @@ namespace qmlon
       void setType(std::string value) { type = value; }
 
     private:
+      Schema* schema;
       Optional<int> min;
       Optional<int> max;
       std::string type;
@@ -57,6 +68,8 @@ namespace qmlon
     class Property {
     public:
       Property() : name(), optional(false), validTypes() {}
+
+      bool validate(qmlon::Object const* value) const;
 
       std::string getName() const { return name; }
       Optional<bool> getOptional() const { return optional; }
@@ -181,7 +194,7 @@ namespace qmlon
     class ObjectValue : public Value
     {
     public:
-      ObjectValue() : Value(), type() {}
+      ObjectValue(Schema* schema) : Value(), schema(schema), type() {}
 
       virtual bool validate(qmlon::Value::Reference const& value) const;
 
@@ -189,6 +202,7 @@ namespace qmlon
       void setType(std::string value) { type = value; }
 
     private:
+      Schema* schema;
       Optional<std::string> type;
     };
 
@@ -197,6 +211,8 @@ namespace qmlon
 
     std::string const& getRoot() const { return root; }
     std::map<std::string, Object> const& getObjects() const { return objects; }
+
+    bool validate(qmlon::Value::Reference const& value) const;
 
   private:
     std::string root;

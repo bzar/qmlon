@@ -146,7 +146,7 @@ int main(int argc, char** argv)
 
 
   // Load QMLON description file
-  std::ifstream f("sprite.sheet");
+  std::ifstream f("spritesheet.qmlon");
   qmlon::Value::Reference value = qmlon::readValue(f);
 
   // Create root object and initialize tree (could also use qmlon::create)
