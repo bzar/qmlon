@@ -1,8 +1,9 @@
 QMLON - QML Object Notation parser and data structure initializer for C++11
 ===========================================================================
 
-QMLON consists of two parts:
+QMLON consists of three parts:
  * a parser that reads QMLON documents
+ * a validation system that uses QMLON validation documents to validate other QMLON documents
  * an initializer system that creates application data structures based on parsed QMLON documents
 
 Both are included in qmlon.h and qmlon.cpp. You can just drop these in with your other code. Note however, that you need `-std=c++0x` compiler flag (at least with GCC 4.6, `-std=c++11` for GCC 4.7 and beyond)
@@ -18,6 +19,46 @@ Reading QMLON documents is as easy as calling `qmlon::readValue` for a suitable 
       ChildObject {
         foo: "bar"
         objectProperty: Foo{bar: "baz"}
+      }
+    }
+
+To validate the document create a QMLON validation document. A QMLON validation document is a QMLON document with a specific form. The validation document is loaded like any QMLON document and then given to qmlon::Schema, which can validate documents using the qmlon::Schema::validate method. There are two validation document examples in the `schema` directory: one to validate the sprite sheet example's QMLON document, and another to validate QMLON validation documents (including itself). To see all current features of QMLON validation documents check the latter one (no actual documentation yet). For example, the above document could be validated with the following validation document:
+
+    Schema {
+      root: "MyDocument"
+
+      MyDocument {
+        properties: [
+          Property { name: "property1", type: String{} },
+          Property { name: "integerProp", type: Integer{} },
+          Property { name: "aFloat", type: Float{} },
+          Property { name: "listOfStuff", type: List{ type: [Integer{}, String{}, Boolean{},
+                                                             Object{ type: "FunkyObject" }]}}
+        ]
+
+        children: [
+          Child { type: "ChildObject" }
+        ]
+      }
+
+      ChildObject {
+        properties: [
+          Property { name: "foo", type: String{} },
+          Property { name: "objectProperty", type: Object{ type: "Foo" }, optional: true }
+        ]
+      }
+
+      FunkyObject {
+        properties: [
+          Property { name: "x", type: Integer{min: 1} },
+          Property { name: "y", type: Integer{max: 3} }
+        ]
+      }
+
+      Foo {
+        properties: [
+          Property { name: "bar", type: String{min: 3, max: 3} },
+        ]
       }
     }
 
