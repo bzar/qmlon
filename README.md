@@ -22,7 +22,7 @@ Reading QMLON documents is as easy as calling `qmlon::readValue` for a suitable 
       }
     }
 
-To validate the document create a QMLON validation document. A QMLON validation document is a QMLON document with a specific form. The validation document is loaded like any QMLON document and then given to qmlon::Schema, which can validate documents using the qmlon::Schema::validate method. There are two validation document examples in the `schema` directory: one to validate the sprite sheet example's QMLON document, and another to validate QMLON validation documents (including itself). To see all current features of QMLON validation documents check the latter one (no actual documentation yet). For example, the above document could be validated with the following validation document:
+To validate the document create a QMLON validation document. A QMLON validation document is a QMLON document with a specific form. The validation document is loaded like any QMLON document and then given to `qmlon::Schema`, which can validate documents using the `qmlon::Schema::validate` method. There are two validation document examples in the `schema` directory: one to validate the sprite sheet example's QMLON document, and another to validate QMLON validation documents (including itself). To see all current features of QMLON validation documents check the latter one (no actual documentation yet). For example, the above document could be validated with the following validation document:
 
     Schema {
       root: "MyDocument"
