@@ -2,55 +2,44 @@ Schema {
   root: "Sheet"
 
   Sheet {
-    properties: [ Property { name: "image", type: String{} } ]
-    children: [ Child { type: "Sprite" } ]
+    Property { name: "image", type: String{} }
+    Child { type: "Sprite" }
   }
 
   Sprite {
-    properties: [ Property { name: "id", type: String{} } ]
-    children: [ Child { type: "Animation" } ]
+    Property { name: "id", type: String{} }
+    Child { type: "Animation" }
   }
 
   Animation {
-    properties: [
-      Property { name: "id", type: String{} },
-      Property { name: "fps", type: Integer{}, optional: true }
-    ]
-    children: [
-      Child { type: "Frame" },
-      Child { type: "Frames" }
-    ]
+    Property { name: "id", type: String{} },
+    Property { name: "fps", type: Integer{}, optional: true }
+
+    Child { type: "Frame" },
+    Child { type: "Frames" }
   }
 
   Frame {
-    properties: [
-      Property { name: "position", type: Object{ type: "Vec2D" } },
-      Property { name: "hotspot", type: Object{ type: "Vec2D" } },
-      Property { name: "size", type: Object{ type: "Size" } }
-    ]
+    Property { name: "position", type: Object{ type: "Vec2D" } }
+    Property { name: "hotspot", type: Object{ type: "Vec2D" } }
+    Property { name: "size", type: Object{ type: "Size" } }
   }
 
   Frames {
-    properties: [
-      Property { name: "position", type: Object{ type: "Vec2D" } },
-      Property { name: "hotspot", type: Object{ type: "Vec2D" } },
-      Property { name: "size", type: Object{ type: "Size" } },
-      Property { name: "delta", type: Object{ type: "Vec2D" }, optional: true },
-      Property { name: "count", type: Integer{}, optional: true }
-    ]
+    Property { name: "position", type: Object{ type: "Vec2D" } }
+    Property { name: "hotspot", type: Object{ type: "Vec2D" } }
+    Property { name: "size", type: Object{ type: "Size" } }
+    Property { name: "delta", type: Object{ type: "Vec2D" }, optional: true }
+    Property { name: "count", type: Integer{}, optional: true }
   }
 
   Vec2D {
-    properties: [
-      Property { name: "x", type: Integer{} }
-      Property { name: "y", type: Integer{} }
-    ]
+    Property { name: "x", type: Integer{} }
+    Property { name: "y", type: Integer{} }
   }
 
   Size {
-    properties: [
-      Property { name: "width", type: Integer{} }
-      Property { name: "height", type: Integer{} }
-    ]
+    Property { name: "width", type: Integer{} }
+    Property { name: "height", type: Integer{} }
   }
 }

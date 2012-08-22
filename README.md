@@ -28,37 +28,31 @@ To validate the document create a QMLON validation document. A QMLON validation 
       root: "MyDocument"
 
       MyDocument {
-        properties: [
-          Property { name: "property1", type: String{} },
-          Property { name: "integerProp", type: Integer{} },
-          Property { name: "aFloat", type: Float{} },
-          Property { name: "listOfStuff", type: List{ type: [Integer{}, String{}, Boolean{},
-                                                             Object{ type: "FunkyObject" }]}}
-        ]
+        Property { name: "property1", type: String{} }
+        Property { name: "integerProp", type: Integer{} }
+        Property { name: "aFloat", type: Float{} }
+        Property {
+          name: "listOfStuff"
+          type: List {
+            type: [Integer{}, String{}, Boolean{}, Object{ type: "FunkyObject" }]
+          }
+        }
 
-        children: [
-          Child { type: "ChildObject" }
-        ]
+        Child { type: "ChildObject" }
       }
 
       ChildObject {
-        properties: [
-          Property { name: "foo", type: String{} },
-          Property { name: "objectProperty", type: Object{ type: "Foo" }, optional: true }
-        ]
+        Property { name: "foo", type: String{} }
+        Property { name: "objectProperty", type: Object{ type: "Foo" }, optional: true }
       }
 
       FunkyObject {
-        properties: [
-          Property { name: "x", type: Integer{min: 1} },
-          Property { name: "y", type: Integer{max: 3} }
-        ]
+        Property { name: "x", type: Integer{min: 1} }
+        Property { name: "y", type: Integer{max: 3} }
       }
 
       Foo {
-        properties: [
-          Property { name: "bar", type: String{min: 3, max: 3} },
-        ]
+        Property { name: "bar", type: String{min: 3, max: 3} }
       }
     }
 

@@ -2,104 +2,92 @@ Schema {
   root: "Schema"
 
   Schema {
-    properties: [
-      Property{ name: "root", type: String{} }
-    ]
-    children: [
-      Child { type: "ObjectType" }
-    ]
+    Property{ name: "root", type: String{} }
+    Child { type: "ObjectType" }
   }
 
   Property {
-    properties: [
-      Property { name: "name", type: String{} },
-      Property { name: "optional", type: Boolean{}, optional: true },
-      Property {
-        name: "type"
-        optional: true
-        type: [
-          Object{type: "Boolean"}, Object{type: "Integer"}, Object{type: "Float"},
-          Object{type: "String"}, Object{type: "List"}, Object{type: "Object"},
-          List {
-            type: [
-              Object{type: "Boolean"},
-              Object{type: "Integer"},
-              Object{type: "Float"},
-              Object{type: "String"},
-              Object{type: "List"},
-              Object{type: "Object"}
-            ]
-          }
-        ]
-      }
-    ]
+    Property { name: "name", type: String{} }
+    Property { name: "optional", type: Boolean{}, optional: true }
+    Property {
+      name: "type"
+      optional: true
+      type: [
+        Object{type: "Boolean"}, Object{type: "Integer"}, Object{type: "Float"},
+        Object{type: "String"}, Object{type: "List"}, Object{type: "Object"},
+        List {
+          type: [
+            Object{type: "Boolean"},
+            Object{type: "Integer"},
+            Object{type: "Float"},
+            Object{type: "String"},
+            Object{type: "List"},
+            Object{type: "Object"}
+          ]
+        }
+      ]
+    }
   }
 
   Child {
-    properties: [
-      Property { name: "min", type: Integer{}, optional: true },
-      Property { name: "max", type: Integer{}, optional: true },
-      Property { name: "type", type: String{} },
-    ]
+    Property { name: "min", type: Integer{}, optional: true }
+    Property { name: "max", type: Integer{}, optional: true }
+    Property { name: "type", type: String{} }
   }
 
   ObjectType {
     interface: true
-    properties: [
-      Property { name: "interface", type: Boolean{}, optional: true },
-      Property {
-        name: "properties"
-        optional: true
-        type: List {
-          type: Object{type: "Property"}
-        }
-      },
-
-      Property {
-        name: "children"
-        optional: true
-        type: List {
-          type: Object{type: "Child"}
-        }
-      }
-    ]
+    Property { name: "interface", type: Boolean{}, optional: true }
+    Child { type: "Property" }
+    Child { type: "Child" }
   }
 
   Boolean {
   }
 
   Integer {
-    properties: [
-      Property { name: "min", type: Integer{}, optional: true },
-      Property { name: "max", type: Integer{}, optional: true }
-    ]
+    Property { name: "min", type: Integer{}, optional: true }
+    Property { name: "max", type: Integer{}, optional: true }
   }
 
   Float {
-    properties: [
-      Property { name: "min", type: Float{}, optional: true },
-      Property { name: "max", type: Float{}, optional: true }
-    ]
+    Property { name: "min", type: Float{}, optional: true }
+    Property { name: "max", type: Float{}, optional: true }
   }
 
   String {
-    properties: [
-      Property { name: "min", type: Integer{}, optional: true },
-      Property { name: "max", type: Integer{}, optional: true }
-    ]
+    Property { name: "min", type: Integer{}, optional: true }
+    Property { name: "max", type: Integer{}, optional: true }
   }
 
   List {
-    properties: [
-      Property { name: "type", type: [Object{type: "Boolean"}, Object{type: "Integer"}, Object{type: "Float"}, Object{type: "String"}, Object{type: "List"}, Object{type: "Object"}, List{type: [Object{type: "Boolean"}, Object{type: "Integer"}, Object{type: "Float"}, Object{type: "String"}, Object{type: "List"}, Object{type: "Object"}]}], optional: true },
-      Property { name: "min", type: Integer{}, optional: true },
-      Property { name: "max", type: Integer{}, optional: true }
-    ]
+    Property { name: "min", type: Integer{}, optional: true }
+    Property { name: "max", type: Integer{}, optional: true }
+    Property {
+      name: "type",
+      optional: true
+      type: [
+        Object{type: "Boolean"},
+        Object{type: "Integer"},
+        Object{type: "Float"},
+        Object{type: "String"},
+        Object{type: "List"},
+        Object{type: "Object"},
+        List {
+          type: [
+            Object{type: "Boolean"},
+            Object{type: "Integer"},
+            Object{type: "Float"},
+            Object{type: "String"},
+            Object{type: "List"},
+            Object{type: "Object"}
+          ]
+        }
+      ]
+    }
   }
 
   Object {
-    properties: [
-      Property { name: "type", type: String{}, optional: true }
-    ]
+    Property { name: "type", type: String{}, optional: true }
   }
 }

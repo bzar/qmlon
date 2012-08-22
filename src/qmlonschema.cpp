@@ -122,25 +122,14 @@ qmlon::Schema& qmlon::Schema::initialize(Schema& schema, qmlon::Value::Reference
   });
 
   qmlon::Initializer<Object> oi({
-    {"interface", [](Object& x, qmlon::Value::Reference v) { x.setIsInterface(v->asBoolean()); }},
-    {"properties", [&](Object& x, qmlon::Value::Reference v) {
-      qmlon::Value::List l = v->asList();
-      for(qmlon::Value::Reference vr : l)
-      {
-        Property property;
-        pi.init(property, vr);
-        x.addProperty(property);
-      }
-    }},
-    {"children", [&](Object& x, qmlon::Value::Reference v) {
-      qmlon::Value::List l = v->asList();
-      for(qmlon::Value::Reference vr : l)
-      {
+    {"interface", [](Object& x, qmlon::Value::Reference v) { x.setIsInterface(v->asBoolean()); }}
+  }, {
+    {"Property", [&](Object& x, qmlon::Object* obj) { x.addProperty(qmlon::create(obj, pi)); }},
+    {"Child", [&](Object& x, qmlon::Object* obj) {
         Child child(&schema);
-        ci.init(child, vr);
+        ci.init(child, obj);
         x.addChild(child);
-      }
-    }}
+    }},
   });
 
   qmlon::Initializer<Schema> si({
