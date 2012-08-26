@@ -111,7 +111,7 @@ qmlon::Value::Reference qmlon::readValue(std::istream& stream)
     }
     else
     {
-      if(!std::isdigit(c))
+      if(!std::isdigit(c) && (c != '-' || buffer.str().size() != 0))
       {
         canBeInteger = false;
         canBeFloat = (c == '.' && !canBeFloat);

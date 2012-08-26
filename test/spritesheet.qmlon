@@ -12,7 +12,7 @@ Sheet {
         position: Vec2D {x: 0, y: 0}
         size: Size {width: 16, height: 32}
         hotspot: Vec2D {x: 8, y: 32}
-        delta: Vec2D {x: 16, y: 0}
+        delta: Vec2D {x: -16, y: 0}
         count: 3
       }
     }
