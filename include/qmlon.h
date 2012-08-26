@@ -69,7 +69,9 @@ namespace qmlon
   public:
     IntegerValue(int value) : value(value) {}
     bool isInteger() const { return true; }
+    bool isFloat() const { return true; }
     int asInteger() const { return value; }
+    float asFloat() const { return value; }
   private:
     int value;
   };

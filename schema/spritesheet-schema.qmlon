@@ -34,8 +34,8 @@ Schema {
   }
 
   Vec2D {
-    Property { name: "x", type: Integer{} }
-    Property { name: "y", type: Integer{} }
+    Property { name: "x", type: Float{} }
+    Property { name: "y", type: Float{} }
   }
 
   Size {
