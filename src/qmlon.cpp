@@ -9,6 +9,7 @@ namespace qmlon
   Object::Reference readObject(std::string const& type, std::istream& stream);
   void printObject(Object* object, std::ostream& out = std::cout, int level = 0);
   void printValue(Value const& value, std::ostream& out = std::cout, int level = 0);
+  void skipComment(std::istream& stream);
 }
 
 
@@ -44,14 +45,20 @@ qmlon::Value::List qmlon::readList(std::istream& stream)
   Value::List list;
   char c = '\0';
 
-  while(stream.peek() != ']')
+  while(stream.get(c) && c != ']')
   {
-    if(isspace(stream.peek()) || stream.peek() == ',')
+    if(isspace(c) || c == ',')
     {
-      stream.get(c);
+      continue;
+    }
+    else if(c == '/' && stream.peek() == '*')
+    {
+      stream.get();
+      skipComment(stream);
     }
     else
     {
+      stream.putback(c);
       auto v = readValue(stream);
       list.push_back(v);
     }
@@ -96,6 +103,11 @@ qmlon::Value::Reference qmlon::readValue(std::istream& stream)
     {
       stream.putback(c);
       break;
+    }
+    else if(c == '/' && stream.peek() == '*')
+    {
+      stream.get();
+      skipComment(stream);
     }
     else
     {
@@ -159,6 +171,11 @@ qmlon::Object::Reference qmlon::readObject(std::string const& type, std::istream
     {
       object->properties[buffer.str()] = readValue(stream);
       buffer.str("");
+    }
+    else if(c == '/' && stream.peek() == '*')
+    {
+      stream.get();
+      skipComment(stream);
     }
     else if(c == '{')
     {
@@ -228,5 +245,11 @@ void qmlon::printValue(Value const& value, std::ostream& out, int level)
     }
     out << "]" << std::endl;
   }
+}
+
+void qmlon::skipComment(std::istream& stream)
+{
+  while(stream.get() != '*' || stream.peek() != '/');
+  stream.get();
 }
 

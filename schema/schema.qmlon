@@ -12,6 +12,8 @@ Schema {
     Property {
       name: "type"
       optional: true
+
+      /* Property type can either be a specific one or one in a list */
       type: [
         Object{type: "Boolean"}, Object{type: "Integer"}, Object{type: "Float"},
         Object{type: "String"}, Object{type: "List"}, Object{type: "Object"},
