@@ -1,11 +1,11 @@
-#include "qmlon.h"
+#include "qmloninitializer.h"
 #include <iostream>
-#include <fstream>
 
 class Frame
 {
 public:
   Frame() : position(), hotspot(), size() {}
+
   struct Position
   {
     Position() : x(0), y(0) {}
@@ -82,8 +82,6 @@ private:
   std::map<std::string, Sprite> sprites;
 };
 
-
-
 int main(int argc, char** argv)
 {
   // Create initializers for target object tree types
@@ -99,15 +97,15 @@ int main(int argc, char** argv)
   });
 
   qmlon::Initializer<Frame> initFrame({
-    {"position", [&](Frame& f, qmlon::Value::Reference v) { f.setPosition(qmlon::create(v, initPosition)); }},
-    {"hotspot", [&](Frame& f, qmlon::Value::Reference v) { f.setHotspot(qmlon::create(v, initPosition)); }},
-    {"size", [&](Frame& f, qmlon::Value::Reference v) { f.setSize(qmlon::create(v, initSize)); }}
+    {"position", [&](Frame& f, qmlon::Value::Reference v) { f.setPosition(initPosition.create(v)); }},
+    {"hotspot", [&](Frame& f, qmlon::Value::Reference v) { f.setHotspot(initPosition.create(v)); }},
+    {"size", [&](Frame& f, qmlon::Value::Reference v) { f.setSize(initSize.create(v)); }}
   });
 
   qmlon::Initializer<Animation> initAnimation({
     {"id", [](Animation& a, qmlon::Value::Reference v) { a.setId(v->asString()); }}
   }, {
-    {"Frame", [&](Animation& a, qmlon::Object* o) { a.addFrame(qmlon::create(o, initFrame)); }},
+    {"Frame", [&](Animation& a, qmlon::Object* o) { a.addFrame(initFrame.create(o)); }},
     {"Frames", [&](Animation& a, qmlon::Object* o) {
       int count = o->hasProperty("count") ? o->getProperty("count")->asInteger() : 1;
       int dx = 0;
@@ -122,7 +120,7 @@ int main(int argc, char** argv)
 
       for(int i = 0; i < count; ++i)
       {
-        Frame f = qmlon::create(o, initFrame);
+        Frame f = initFrame.create(o);
         Frame::Position p = f.getPosition();
         p.x += i * dx;
         p.y += i * dy;
@@ -135,21 +133,20 @@ int main(int argc, char** argv)
   qmlon::Initializer<Sprite> initSprite({
     {"id", [](Sprite& s, qmlon::Value::Reference v) { s.setId(v->asString()); }}
   }, {
-    {"Animation", [&](Sprite& s, qmlon::Object* o) { s.addAnimation(qmlon::create(o, initAnimation)); }}
+    {"Animation", [&](Sprite& s, qmlon::Object* o) { s.addAnimation(initAnimation.create(o)); }}
   });
 
   qmlon::Initializer<SpriteSheet> initSheet({
     {"image", [](SpriteSheet& sheet, qmlon::Value::Reference value) { sheet.setImage(value->asString()); }}
   }, {
-    {"Sprite", [&](SpriteSheet& sheet, qmlon::Object* obj) { sheet.addSprite(qmlon::create(obj, initSprite)); }}
+    {"Sprite", [&](SpriteSheet& sheet, qmlon::Object* obj) { sheet.addSprite(initSprite.create(obj)); }}
   });
 
 
   // Load QMLON description file
-  std::ifstream f("spritesheet.qmlon");
-  qmlon::Value::Reference value = qmlon::readValue(f);
+  qmlon::Value::Reference value = qmlon::readFile("spritesheet.qmlon");
 
-  // Create root object and initialize tree (could also use qmlon::create)
+  // Create root object and initialize tree
   SpriteSheet sheet;
   initSheet.init(sheet, value);
 

@@ -1,6 +1,7 @@
 #include "qmlon.h"
 #include <cctype>
 #include <sstream>
+#include <fstream>
 
 namespace qmlon
 {
@@ -151,6 +152,12 @@ qmlon::Value::Reference qmlon::readValue(std::istream& stream)
 qmlon::Value::Reference qmlon::readValue(std::string const& str)
 {
   std::istringstream ss(str);
+  return readValue(ss);
+}
+
+qmlon::Value::Reference qmlon::readFile(std::string const& filename)
+{
+  std::ifstream ss(filename);
   return readValue(ss);
 }
 

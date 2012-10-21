@@ -1,4 +1,5 @@
 #include "qmlonschema.h"
+#include "qmloninitializer.h"
 
 qmlon::Schema& qmlon::Schema::initialize(Schema& schema, qmlon::Value::Reference value)
 {
