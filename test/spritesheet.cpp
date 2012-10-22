@@ -97,15 +97,15 @@ int main(int argc, char** argv)
   });
 
   qmlon::Initializer<Frame> initFrame({
-    {"position", [&](Frame& f, qmlon::Value::Reference v) { f.setPosition(qmlon::create(v, initPosition)); }},
-    {"hotspot", [&](Frame& f, qmlon::Value::Reference v) { f.setHotspot(qmlon::create(v, initPosition)); }},
-    {"size", [&](Frame& f, qmlon::Value::Reference v) { f.setSize(qmlon::create(v, initSize)); }}
+    {"position", qmlon::createSet(initPosition, &Frame::setPosition)},
+    {"hotspot", qmlon::createSet(initPosition, &Frame::setHotspot)},
+    {"size", qmlon::createSet(initSize, &Frame::setSize)}
   });
 
   qmlon::Initializer<Animation> initAnimation({
     {"id", qmlon::set(&Animation::setId)}
   }, {
-    {"Frame", [&](Animation& a, qmlon::Object* o) { a.addFrame(qmlon::create(o, initFrame)); }},
+    {"Frame", qmlon::createAdd(initFrame, &Animation::addFrame)},
     {"Frames", [&](Animation& a, qmlon::Object* o) {
       int count = o->hasProperty("count") ? o->getProperty("count")->asInteger() : 1;
       int dx = 0;
@@ -133,13 +133,13 @@ int main(int argc, char** argv)
   qmlon::Initializer<Sprite> initSprite({
     {"id", qmlon::set(&Sprite::setId)}
   }, {
-    {"Animation", [&](Sprite& s, qmlon::Object* o) { s.addAnimation(qmlon::create(o, initAnimation)); }}
+    {"Animation", qmlon::createAdd(initAnimation, &Sprite::addAnimation)}
   });
 
   qmlon::Initializer<SpriteSheet> initSheet({
     {"image", qmlon::set(&SpriteSheet::setImage)}
   }, {
-    {"Sprite", [&](SpriteSheet& sheet, qmlon::Object* obj) { sheet.addSprite(qmlon::create(obj, initSprite)); }}
+    {"Sprite", qmlon::createAdd(initSprite, &SpriteSheet::addSprite)}
   });
 
 

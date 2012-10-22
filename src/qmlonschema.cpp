@@ -93,8 +93,8 @@ qmlon::Schema& qmlon::Schema::initialize(Schema& schema, qmlon::Value::Reference
   });
 
   qmlon::Initializer<Property> pi({
-    {"name", [](Property& x, qmlon::Value::Reference v) { x.setName(v->asString()); }},
-    {"optional", [](Property& x, qmlon::Value::Reference v) { x.setOptional(v->asBoolean()); }},
+    {"name", qmlon::set(&Property::setName)},
+    {"optional", qmlon::set(&Property::setOptional)},
     {"type", [&](Property& x, qmlon::Value::Reference v) {
 
       if(v->isList())
@@ -125,7 +125,7 @@ qmlon::Schema& qmlon::Schema::initialize(Schema& schema, qmlon::Value::Reference
   qmlon::Initializer<Object> oi({
     {"interface", qmlon::set(&Object::setIsInterface)}
   }, {
-    {"Property", [&](Object& x, qmlon::Object* obj) { x.addProperty(qmlon::create(obj, pi)); }},
+    {"Property", qmlon::createAdd(pi, &Object::addProperty)},
     {"Child", [&](Object& x, qmlon::Object* obj) {
         Child child(&schema);
         ci.init(child, obj);
