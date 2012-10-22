@@ -75,7 +75,9 @@ To use the initializer part you need to define `qmlon::Initializer` objects for 
 
 The `qmlon::create` creates and initializes a variable of the initializer's template type. It only works for types that are default constructible. Otherwise you'd first create the object and then use `qmlon::Initializer::init` to set the properties and children. When you've created the initializers you can just request the root type `qmlon::Initializer<MyDocumentType>` to create and initialize the data structures using `qmlon::create` or `qmlon::Initializer::init` like above.
 
-There are also some convenience functions for common initialization operations. One such function is a generic setter generator `qmlon::set`. It takes a member or member function pointer as a parameter and returns a setter function that can be used by an initializer. For example, the above code could also be written as:
+There are also some convenience functions for common initialization operations. One such function is a generic setter generator `qmlon::set`. It takes a member or member function pointer as a parameter and returns a setter function that can be used by an initializer. Similar functions are `qmlon::createSet` and `qmlon::createAdd` which create an object, initialize it and then set it as property like `qmlon::set`
+
+For example, the above code could also be written as:
 
     qmlon::Initializer<FooType> initFoo({
       {"bar", qmlon::set(&FooType::bar)}
@@ -83,15 +85,13 @@ There are also some convenience functions for common initialization operations. 
 
     qmlon::Initializer<ChildObjectType> initChild({
       {"foo", qmlon::set(&ChildObjectType::foo)}
-      {"objectProperty", [](ChildObjectType& child, qmlon::Value::Reference value) { child.objectProperty = qmlon::create(value, initFoo); }}
+      {"objectProperty", qmlon::createSet(initFoo, &ChildObjectType::objectProperty)}
     });
 
     qmlon::Initializer<MyDocumentType> initDocument({
       {"integerProp", qmlon::set(&MyDocumentType::setIntegerProp)}
     }, {
-      {"ChildObject", [&](MyDocumentType& doc, qmlon::Object* obj) { doc.addChild(qmlon::create(obj, initChild)); }}
+      {"ChildObject", qmlon::createAdd(initChild, &MyDocumentType::addChild)}
     });
-
-More convenience functions will be available later on.
 
 Check the `test` directory for a full example.
