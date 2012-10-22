@@ -196,6 +196,16 @@ template<class T>
     };
   }
 
+  template<class T, class U>
+  std::function<void(T&, qmlon::Value::Reference)> createSet(Initializer<U>& initializer, U T::*value)
+  {
+    return [&initializer, value](T& t, qmlon::Value::Reference v) { 
+      U u;
+      initializer.init(u, v);
+      (t.*value) = u;
+    };
+  }
+
   template<class T, class U, typename R>
   std::function<void(T&, qmlon::Object*)> createAdd(Initializer<U>& initializer, R (T::*setter)(U))
   {
