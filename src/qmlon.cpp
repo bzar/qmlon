@@ -259,4 +259,3 @@ void qmlon::skipComment(std::istream& stream)
   while(stream.get() != '*' || stream.peek() != '/');
   stream.get();
 }
-

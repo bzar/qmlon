@@ -87,25 +87,25 @@ int main(int argc, char** argv)
   // Create initializers for target object tree types
 
   qmlon::Initializer<Frame::Position> initPosition({
-    {"x", [](Frame::Position& p, qmlon::Value::Reference v) { p.x = v->asInteger(); }},
-    {"y", [](Frame::Position& p, qmlon::Value::Reference v) { p.y = v->asInteger(); }}
+    {"x", qmlon::set(&Frame::Position::x)},
+    {"y", qmlon::set(&Frame::Position::y)}
   });
 
   qmlon::Initializer<Frame::Size> initSize({
-    {"width", [](Frame::Size& s, qmlon::Value::Reference v) { s.width = v->asInteger(); }},
-    {"height", [](Frame::Size& s, qmlon::Value::Reference v) { s.height = v->asInteger(); }}
+    {"width", qmlon::set(&Frame::Size::width)},
+    {"height", qmlon::set(&Frame::Size::height)}
   });
 
   qmlon::Initializer<Frame> initFrame({
-    {"position", [&](Frame& f, qmlon::Value::Reference v) { f.setPosition(initPosition.create(v)); }},
-    {"hotspot", [&](Frame& f, qmlon::Value::Reference v) { f.setHotspot(initPosition.create(v)); }},
-    {"size", [&](Frame& f, qmlon::Value::Reference v) { f.setSize(initSize.create(v)); }}
+    {"position", [&](Frame& f, qmlon::Value::Reference v) { f.setPosition(qmlon::create(v, initPosition)); }},
+    {"hotspot", [&](Frame& f, qmlon::Value::Reference v) { f.setHotspot(qmlon::create(v, initPosition)); }},
+    {"size", [&](Frame& f, qmlon::Value::Reference v) { f.setSize(qmlon::create(v, initSize)); }}
   });
 
   qmlon::Initializer<Animation> initAnimation({
-    {"id", [](Animation& a, qmlon::Value::Reference v) { a.setId(v->asString()); }}
+    {"id", qmlon::set(&Animation::setId)}
   }, {
-    {"Frame", [&](Animation& a, qmlon::Object* o) { a.addFrame(initFrame.create(o)); }},
+    {"Frame", [&](Animation& a, qmlon::Object* o) { a.addFrame(qmlon::create(o, initFrame)); }},
     {"Frames", [&](Animation& a, qmlon::Object* o) {
       int count = o->hasProperty("count") ? o->getProperty("count")->asInteger() : 1;
       int dx = 0;
@@ -120,7 +120,7 @@ int main(int argc, char** argv)
 
       for(int i = 0; i < count; ++i)
       {
-        Frame f = initFrame.create(o);
+        Frame f = qmlon::create(o, initFrame);
         Frame::Position p = f.getPosition();
         p.x += i * dx;
         p.y += i * dy;
@@ -131,15 +131,15 @@ int main(int argc, char** argv)
   });
 
   qmlon::Initializer<Sprite> initSprite({
-    {"id", [](Sprite& s, qmlon::Value::Reference v) { s.setId(v->asString()); }}
+    {"id", qmlon::set(&Sprite::setId)}
   }, {
-    {"Animation", [&](Sprite& s, qmlon::Object* o) { s.addAnimation(initAnimation.create(o)); }}
+    {"Animation", [&](Sprite& s, qmlon::Object* o) { s.addAnimation(qmlon::create(o, initAnimation)); }}
   });
 
   qmlon::Initializer<SpriteSheet> initSheet({
-    {"image", [](SpriteSheet& sheet, qmlon::Value::Reference value) { sheet.setImage(value->asString()); }}
+    {"image", qmlon::set(&SpriteSheet::setImage)}
   }, {
-    {"Sprite", [&](SpriteSheet& sheet, qmlon::Object* obj) { sheet.addSprite(initSprite.create(obj)); }}
+    {"Sprite", [&](SpriteSheet& sheet, qmlon::Object* obj) { sheet.addSprite(qmlon::create(obj, initSprite)); }}
   });
 
 

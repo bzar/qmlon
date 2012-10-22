@@ -19,9 +19,6 @@ template<class T>
     T& init(T& t, Object* obj);
     T& init(T& t, Value::Reference value);
     
-    T create(Object* obj, typename std::enable_if<std::is_default_constructible<T>::value>::type* = 0);
-    T create(Value::Reference value, typename std::enable_if<std::is_default_constructible<T>::value>::type* = 0);
-    
     static T& initialize(T& t, Object* obj,
                           std::map<std::string, std::function<void(T&, Value::Reference)>> propertySetters,
                           std::map<std::string, std::function<void(T&, Object*)>> childSetters);
@@ -61,20 +58,6 @@ template<class T>
   }
 
   template<class T>
-  T Initializer<T>::create(Object* obj, typename std::enable_if<std::is_default_constructible<T>::value>::type*)
-  {
-    T t;
-    return init(t, obj);
-  }
-  
-  template<class T>
-  T Initializer<T>::create(Value::Reference value, typename std::enable_if<std::is_default_constructible<T>::value>::type*)
-  {
-    T t;
-    return init(t, value);
-  }
-
-  template<class T>
   T& Initializer<T>::initialize(T& t, Object* obj,
                 std::map<std::string, std::function<void(T&, Value::Reference)>> propertySetters,
                 std::map<std::string, std::function<void(T&, Object*)>> childSetters)
@@ -106,6 +89,94 @@ template<class T>
     }
     return t;
   }
+  
+  template<class T>
+  T create(Object* obj, Initializer<T>& initializer)
+  {
+    T t;
+    return initializer.init(t, obj);
+  }
+  
+  template<class T>
+  T create(Value::Reference value, Initializer<T>& initializer)
+  {
+    T t;
+    return initializer.init(t, value);
+  }
+
+  template<class T, typename R>
+  std::function<void(T&, qmlon::Value::Reference)> set(R (T::*setter)(bool))
+  {
+    return [setter](T& t, qmlon::Value::Reference v) { (t.*setter)(v->asBoolean()); };
+  }
+
+  template<class T, typename R>
+  std::function<void(T&, qmlon::Value::Reference)> set(R (T::*setter)(int))
+  {
+    return [setter](T& t, qmlon::Value::Reference v) { (t.*setter)(v->asInteger()); };
+  }
+
+  template<class T, typename R>
+  std::function<void(T&, qmlon::Value::Reference)> set(R (T::*setter)(float))
+  {
+    return [setter](T& t, qmlon::Value::Reference v) { (t.*setter)(v->asFloat()); };
+  }
+
+  template<class T, typename R>
+  std::function<void(T&, qmlon::Value::Reference)> set(R (T::*setter)(std::string))
+  {
+    return [setter](T& t, qmlon::Value::Reference v) { (t.*setter)(v->asString()); };
+  }
+
+  template<class T, typename R>
+  std::function<void(T&, qmlon::Value::Reference)> set(R (T::*setter)(bool const&))
+  {
+    return [setter](T& t, qmlon::Value::Reference v) { (t.*setter)(v->asBoolean()); };
+  }
+
+  template<class T, typename R>
+  std::function<void(T&, qmlon::Value::Reference)> set(R (T::*setter)(int const&))
+  {
+    return [setter](T& t, qmlon::Value::Reference v) { (t.*setter)(v->asInteger()); };
+  }
+
+  template<class T, typename R>
+  std::function<void(T&, qmlon::Value::Reference)> set(R (T::*setter)(float const&))
+  {
+    return [setter](T& t, qmlon::Value::Reference v) { (t.*setter)(v->asFloat()); };
+  }
+
+  template<class T, typename R>
+  std::function<void(T&, qmlon::Value::Reference)> set(R (T::*setter)(std::string const&))
+  {
+    return [setter](T& t, qmlon::Value::Reference v) { (t.*setter)(v->asString()); };
+  }
+
+  template<class T>
+  std::function<void(T&, qmlon::Value::Reference)> set(bool T::*value)
+  {
+    return [value](T& t, qmlon::Value::Reference v) { (t.*value) = v->asBoolean(); };
+  }
+
+  template<class T>
+  std::function<void(T&, qmlon::Value::Reference)> set(int T::*value)
+  {
+    return [value](T& t, qmlon::Value::Reference v) { (t.*value) = v->asInteger(); };
+  }
+
+  template<class T>
+  std::function<void(T&, qmlon::Value::Reference)> set(float T::*value)
+  {
+    return [value](T& t, qmlon::Value::Reference v) { (t.*value) = v->asFloat(); };
+  }
+
+  template<class T>
+  std::function<void(T&, qmlon::Value::Reference)> set(std::string T::*value)
+  {
+    return [value](T& t, qmlon::Value::Reference v) { (t.*value) = v->asString(); };
+  }
+
+
 }
 
 #endif

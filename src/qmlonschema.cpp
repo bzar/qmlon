@@ -6,27 +6,27 @@ qmlon::Schema& qmlon::Schema::initialize(Schema& schema, qmlon::Value::Reference
   qmlon::Initializer<BooleanValue> bvi;
 
   qmlon::Initializer<IntegerValue> ivi({
-    {"min", [](IntegerValue& x, qmlon::Value::Reference v) { x.setMin(v->asInteger()); }},
-    {"max", [](IntegerValue& x, qmlon::Value::Reference v) { x.setMax(v->asInteger()); }}
+    {"min", qmlon::set(&IntegerValue::setMin)},
+    {"max", qmlon::set(&IntegerValue::setMax)}
   });
 
   qmlon::Initializer<FloatValue> fvi({
-    {"min", [](FloatValue& x, qmlon::Value::Reference v) { x.setMin(v->asFloat()); }},
-    {"max", [](FloatValue& x, qmlon::Value::Reference v) { x.setMax(v->asFloat()); }}
+    {"min", qmlon::set(&FloatValue::setMin)},
+    {"max", qmlon::set(&FloatValue::setMax)}
   });
 
   qmlon::Initializer<StringValue> svi({
-    {"min", [](StringValue& x, qmlon::Value::Reference v) { x.setMin(v->asInteger()); }},
-    {"max", [](StringValue& x, qmlon::Value::Reference v) { x.setMax(v->asInteger()); }}
+    {"min", qmlon::set(&StringValue::setMin)},
+    {"max", qmlon::set(&StringValue::setMax)}
   });
 
   qmlon::Initializer<ObjectValue> ovi({
-    {"type", [](ObjectValue& x, qmlon::Value::Reference v) { x.setType(v->asString()); }}
+    {"type", qmlon::set(&ObjectValue::setType)}
   });
 
   qmlon::Initializer<ListValue> lvi({
-    {"min", [](ListValue& x, qmlon::Value::Reference v) { x.setMin(v->asInteger()); }},
-    {"max", [](ListValue& x, qmlon::Value::Reference v) { x.setMax(v->asInteger()); }}
+    {"min", qmlon::set(&ListValue::setMin)},
+    {"max", qmlon::set(&ListValue::setMax)}
   });
 
   std::function<qmlon::Schema::Value::Reference(qmlon::Value::Reference)> createValue([&](qmlon::Value::Reference value) {
@@ -117,13 +117,13 @@ qmlon::Schema& qmlon::Schema::initialize(Schema& schema, qmlon::Value::Reference
   });
 
   qmlon::Initializer<Child> ci({
-    {"min", [](Child& x, qmlon::Value::Reference v) { x.setMin(v->asInteger()); }},
-    {"max", [](Child& x, qmlon::Value::Reference v) { x.setMax(v->asInteger()); }},
-    {"type", [](Child& x, qmlon::Value::Reference v) { x.setType(v->asString()); }}
+    {"min", qmlon::set(&Child::setMin)},
+    {"max", qmlon::set(&Child::setMax)},
+    {"type", qmlon::set(&Child::setType)}
   });
 
   qmlon::Initializer<Object> oi({
-    {"interface", [](Object& x, qmlon::Value::Reference v) { x.setIsInterface(v->asBoolean()); }}
+    {"interface", qmlon::set(&Object::setIsInterface)}
   }, {
     {"Property", [&](Object& x, qmlon::Object* obj) { x.addProperty(qmlon::create(obj, pi)); }},
     {"Child", [&](Object& x, qmlon::Object* obj) {
@@ -134,11 +134,11 @@ qmlon::Schema& qmlon::Schema::initialize(Schema& schema, qmlon::Value::Reference
   });
 
   qmlon::Initializer<Schema> si({
-    {"root", [](Schema& x, qmlon::Value::Reference v) { x.setRoot(v->asString()); }}
+    {"root", qmlon::set(&Schema::setRoot)}
   }, {
     {"", [&](Schema& x, qmlon::Object* obj) {
-
-      Object o = qmlon::create(obj, oi);
+      Object o;
+      oi.init(o, obj);
       o.setType(obj->type);
       x.addObject(o);
     }}
