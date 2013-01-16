@@ -8,7 +8,7 @@ namespace qmlon
   std::string readString(std::istream& stream);
   Value::List readList(std::istream& stream);
   Object::Reference readObject(std::string const& type, std::istream& stream);
-  void printObject(Object* object, std::ostream& out = std::cout, int level = 0);
+  void printObject(Object& object, std::ostream& out = std::cout, int level = 0);
   void printValue(Value const& value, std::ostream& out = std::cout, int level = 0);
   void skipComment(std::istream& stream);
 }
@@ -199,11 +199,11 @@ qmlon::Object::Reference qmlon::readObject(std::string const& type, std::istream
 }
 
 
-void qmlon::printObject(Object* object, std::ostream& out, int level)
+void qmlon::printObject(Object& object, std::ostream& out, int level)
 {
-  out << object->type << " {" << std::endl;
+  out << object.type << " {" << std::endl;
 
-  for(auto prop : object->properties)
+  for(auto prop : object.properties)
   {
     out << std::string(level + 1, ' ');
     out << prop.first << ": ";
@@ -211,10 +211,10 @@ void qmlon::printObject(Object* object, std::ostream& out, int level)
     out << std::endl;
   }
 
-  for(auto child : object->children)
+  for(auto child : object.children)
   {
     out << std::string(level + 1, ' ');
-    printObject(child.get(), out, level + 1);
+    printObject(*child, out, level + 1);
   }
 
   out << std::string(level, ' ') << "}" << std::endl;

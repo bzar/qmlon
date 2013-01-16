@@ -30,41 +30,41 @@ qmlon::Schema& qmlon::Schema::initialize(Schema& schema, qmlon::Value::Reference
   });
 
   std::function<qmlon::Schema::Value::Reference(qmlon::Value::Reference)> createValue([&](qmlon::Value::Reference value) {
-    qmlon::Object* o = value->asObject();
+    qmlon::Object& o = value->asObject();
     qmlon::Schema::Value::Reference result;
 
-    if(o->type == "Boolean")
+    if(o.type == "Boolean")
     {
       BooleanValue* bv = new BooleanValue;
       bvi.init(*bv, o);
       result.reset(bv);
     }
-    else if(o->type == "Integer")
+    else if(o.type == "Integer")
     {
       IntegerValue* iv = new IntegerValue;
       ivi.init(*iv, o);
       result.reset(iv);
     }
-    else if(o->type == "Float")
+    else if(o.type == "Float")
     {
       FloatValue* fv = new FloatValue;
       fvi.init(*fv, o);
       result.reset(fv);
 
     }
-    else if(o->type == "String")
+    else if(o.type == "String")
     {
       StringValue* sv = new StringValue;
       svi.init(*sv, o);
       result.reset(sv);
     }
-    else if(o->type == "Object")
+    else if(o.type == "Object")
     {
       ObjectValue* ov = new ObjectValue(&schema);
       ovi.init(*ov, o);
       result.reset(ov);
     }
-    else if(o->type == "List")
+    else if(o.type == "List")
     {
       ListValue* lv = new ListValue;
       lvi.init(*lv, o);
@@ -126,7 +126,7 @@ qmlon::Schema& qmlon::Schema::initialize(Schema& schema, qmlon::Value::Reference
     {"interface", qmlon::set(&Object::setIsInterface)}
   }, {
     {"Property", qmlon::createAdd(pi, &Object::addProperty)},
-    {"Child", [&](Object& x, qmlon::Object* obj) {
+    {"Child", [&](Object& x, qmlon::Object& obj) {
         Child child(&schema);
         ci.init(child, obj);
         x.addChild(child);
@@ -136,10 +136,10 @@ qmlon::Schema& qmlon::Schema::initialize(Schema& schema, qmlon::Value::Reference
   qmlon::Initializer<Schema> si({
     {"root", qmlon::set(&Schema::setRoot)}
   }, {
-    {"", [&](Schema& x, qmlon::Object* obj) {
+    {"", [&](Schema& x, qmlon::Object& obj) {
       Object o;
       oi.init(o, obj);
-      o.setType(obj->type);
+      o.setType(obj.type);
       x.addObject(o);
     }}
   });
@@ -176,7 +176,7 @@ bool qmlon::Schema::Child::validate(qmlon::Object::Reference object) const
     return false;
   }
 
-  if(!objectType->second.validate(object.get()))
+  if(!objectType->second.validate(*object))
   {
     return false;
   }
@@ -184,10 +184,10 @@ bool qmlon::Schema::Child::validate(qmlon::Object::Reference object) const
   return true;
 }
 
-bool qmlon::Schema::Property::validate(qmlon::Object const* value) const
+bool qmlon::Schema::Property::validate(qmlon::Object const& value) const
 {
-  auto p = value->properties.find(name);
-  if(p == value->properties.end())
+  auto p = value.properties.find(name);
+  if(p == value.properties.end())
   {
     if(optional.set && optional.value)
     {
@@ -208,9 +208,9 @@ bool qmlon::Schema::Property::validate(qmlon::Object const* value) const
   return false;
 }
 
-bool qmlon::Schema::Object::validate(qmlon::Object const* value) const
+bool qmlon::Schema::Object::validate(qmlon::Object const& value) const
 {
-  if(!isInterface && value->type != type)
+  if(!isInterface && value.type != type)
     return false;
 
   for(Property const& property : properties)
@@ -225,7 +225,7 @@ bool qmlon::Schema::Object::validate(qmlon::Object const* value) const
     n[child.getType()] = 0;
   }
 
-  for(qmlon::Object::Reference object : value->children)
+  for(qmlon::Object::Reference object : value.children)
   {
     bool valid = false;
     for(Child const& child : children)

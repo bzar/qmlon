@@ -69,7 +69,7 @@ namespace qmlon
     public:
       Property() : name(), optional(false), validTypes() {}
 
-      bool validate(qmlon::Object const* value) const;
+      bool validate(qmlon::Object const& value) const;
 
       std::string getName() const { return name; }
       Optional<bool> getOptional() const { return optional; }
@@ -90,7 +90,7 @@ namespace qmlon
     public:
       Object() : type(), isInterface(false), properties(), children() {}
 
-      bool validate(qmlon::Object const* value) const;
+      bool validate(qmlon::Object const& value) const;
 
       std::string getType() const { return type; }
       bool getIsInterface() const { return isInterface; }

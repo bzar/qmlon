@@ -5,7 +5,7 @@
 
 namespace qmlon
 {
-  template<class T> T create(Object* obj, Initializer<T>& initializer);
+  template<class T> T create(Object& obj, Initializer<T>& initializer);
   template<class T> T create(Value::Reference value, Initializer<T>& initializer);
   
   template<class T, typename R> std::function<void(T&, qmlon::Value::Reference)> set(R (T::*setter)(bool));
@@ -29,15 +29,15 @@ namespace qmlon
   template<class T, class U, typename R> std::function<void(T&, qmlon::Value::Reference)> createSet(std::initializer_list<Initializer<U>> initializers, R (T::*setter)(U));
   template<class T, class U, typename R> std::function<void(T&, qmlon::Value::Reference)> createSet(std::initializer_list<Initializer<U>> initializers, R (T::*setter)(U const&));
   
-  template<class T, class U, typename R> std::function<void(T&, qmlon::Object*)> createAdd(Initializer<U>& initializer, R (T::*setter)(U));
-  template<class T, class U, typename R> std::function<void(T&, qmlon::Object*)> createAdd(Initializer<U>& initializer, R (T::*setter)(U const&));
-  template<class T, class U, typename R> std::function<void(T&, qmlon::Object*)> createAdd(std::initializer_list<Initializer<U>> initializers, R (T::*setter)(U));
-  template<class T, class U, typename R> std::function<void(T&, qmlon::Object*)> createAdd(std::initializer_list<Initializer<U>> initializers, R (T::*setter)(U const&));
+  template<class T, class U, typename R> std::function<void(T&, qmlon::Object&)> createAdd(Initializer<U>& initializer, R (T::*setter)(U));
+  template<class T, class U, typename R> std::function<void(T&, qmlon::Object&)> createAdd(Initializer<U>& initializer, R (T::*setter)(U const&));
+  template<class T, class U, typename R> std::function<void(T&, qmlon::Object&)> createAdd(std::initializer_list<Initializer<U>> initializers, R (T::*setter)(U));
+  template<class T, class U, typename R> std::function<void(T&, qmlon::Object&)> createAdd(std::initializer_list<Initializer<U>> initializers, R (T::*setter)(U const&));
 
   ///////////////////////////////////////////////////////////////////
   
   template<class T>
-  T create(Object* obj, Initializer<T>& initializer)
+  T create(Object& obj, Initializer<T>& initializer)
   {
     T t;
     return initializer.init(t, obj);
@@ -189,9 +189,9 @@ namespace qmlon
   }
 
   template<class T, class U, typename R>
-  std::function<void(T&, qmlon::Object*)> createAdd(Initializer<U>& initializer, R (T::*setter)(U))
+  std::function<void(T&, qmlon::Object&)> createAdd(Initializer<U>& initializer, R (T::*setter)(U))
   {
-    return [&initializer, setter](T& t, qmlon::Object* obj) { 
+    return [&initializer, setter](T& t, qmlon::Object& obj) { 
       U u;
       initializer.init(u, obj);
       (t.*setter)(u);
@@ -199,9 +199,9 @@ namespace qmlon
   }
 
   template<class T, class U, typename R>
-  std::function<void(T&, qmlon::Object*)> createAdd(Initializer<U>& initializer, R (T::*setter)(U const&))
+  std::function<void(T&, qmlon::Object&)> createAdd(Initializer<U>& initializer, R (T::*setter)(U const&))
   {
-    return [&initializer, setter](T& t, qmlon::Object* obj) { 
+    return [&initializer, setter](T& t, qmlon::Object& obj) { 
       U u;
       initializer.init(u, obj);
       (t.*setter)(u);
@@ -209,9 +209,9 @@ namespace qmlon
   }
 
   template<class T, class U, typename R>
-  std::function<void(T&, qmlon::Object*)> createAdd(std::initializer_list<Initializer<U>> initializers, R (T::*setter)(U))
+  std::function<void(T&, qmlon::Object&)> createAdd(std::initializer_list<Initializer<U>> initializers, R (T::*setter)(U))
   {
-    return [&initializers, setter](T& t, qmlon::Object* obj) { 
+    return [&initializers, setter](T& t, qmlon::Object& obj) { 
       U u;
       for(auto initializer : initializers) {
 	initializer.init(u, obj);
@@ -221,9 +221,9 @@ namespace qmlon
   }
 
   template<class T, class U, typename R>
-  std::function<void(T&, qmlon::Object*)> createAdd(std::initializer_list<Initializer<U>> initializers, R (T::*setter)(U const&))
+  std::function<void(T&, qmlon::Object&)> createAdd(std::initializer_list<Initializer<U>> initializers, R (T::*setter)(U const&))
   {
-    return [&initializers, setter](T& t, qmlon::Object* obj) { 
+    return [&initializers, setter](T& t, qmlon::Object& obj) { 
       U u;
       for(auto initializer : initializers) {
 	initializer.init(u, obj);

@@ -106,16 +106,16 @@ int main(int argc, char** argv)
     {"id", qmlon::set(&Animation::setId)}
   }, {
     {"Frame", qmlon::createAdd(initFrame, &Animation::addFrame)},
-    {"Frames", [&](Animation& a, qmlon::Object* o) {
-      int count = o->hasProperty("count") ? o->getProperty("count")->asInteger() : 1;
+    {"Frames", [&](Animation& a, qmlon::Object& o) {
+      int count = o.hasProperty("count") ? o.getProperty("count")->asInteger() : 1;
       int dx = 0;
       int dy = 0;
 
-      if(o->hasProperty("delta"))
+      if(o.hasProperty("delta"))
       {
-        qmlon::Object* d = o->getProperty("delta")->asObject();
-        dx = d->hasProperty("x") ? d->getProperty("x")->asInteger() : 0;
-        dy = d->hasProperty("y") ? d->getProperty("y")->asInteger() : 0;
+        qmlon::Object& d = o.getProperty("delta")->asObject();
+        dx = d.hasProperty("x") ? d.getProperty("x")->asInteger() : 0;
+        dy = d.hasProperty("y") ? d.getProperty("y")->asInteger() : 0;
       }
 
       for(int i = 0; i < count; ++i)

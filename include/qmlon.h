@@ -30,7 +30,7 @@ namespace qmlon
     virtual int asInteger() const { throw std::runtime_error("Invalid use of QMLON value. Value type is not integer!"); }
     virtual float asFloat() const { throw std::runtime_error("Invalid use of QMLON value. Value type is not float!"); }
     virtual std::string const& asString() const { throw std::runtime_error("Invalid use of QMLON value. Value type is not string!"); }
-    virtual Object* asObject() const { throw std::runtime_error("Invalid use of QMLON value. Value type is not object!"); }
+    virtual Object& asObject() const { throw std::runtime_error("Invalid use of QMLON value. Value type is not object!"); }
     virtual List const& asList() const { throw std::runtime_error("Invalid use of QMLON value. Value type is not list!"); }
 
     std::string str() const;
@@ -100,7 +100,7 @@ namespace qmlon
   public:
     ObjectValue(Object::Reference value) : value(value) {}
     bool isObject() const { return true; }
-    Object* asObject() const { return value.get(); }
+    Object& asObject() const { return *value; }
   private:
     Object::Reference value;
   };
