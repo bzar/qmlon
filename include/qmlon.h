@@ -118,7 +118,6 @@ namespace qmlon
   Value::Reference readValue(std::istream& stream);
   Value::Reference readValue(std::string const& str);
   Value::Reference readFile(std::string const& filename);
-
 }
 
 #endif

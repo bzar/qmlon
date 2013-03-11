@@ -1,6 +1,7 @@
 Sheet {
   image: "player.png"
-  list: [1, 1.2, true, false, "bananas", Vec2D {x: 3, y: 14}]
+  // a list of values
+  list: [1, 1.2, true, false, "bananas", Vec2D {x: 3, y: 14}, ""] 
   Sprite {
     id: "player"
 
@@ -20,6 +21,9 @@ Sheet {
     Animation {
       id: "jump"
 
+      /** This defines a range
+        * of frames
+        */
       Frames {
         position: Vec2D {x: 0, y: 32}
         size: Size {width: 16, height: 32}

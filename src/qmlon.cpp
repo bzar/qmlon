@@ -1,16 +1,17 @@
 #include "qmlon.h"
+#include "qmlonlexer.h"
 #include <cctype>
 #include <sstream>
 #include <fstream>
-
+#include <iostream>
 namespace qmlon
 {
-  std::string readString(std::istream& stream);
-  Value::List readList(std::istream& stream);
-  Object::Reference readObject(std::string const& type, std::istream& stream);
+  Value::Reference readValue(SymbolSequence& symbols);
+  Value::List readList(SymbolSequence& symbols);
+  Object::Reference readObject(SymbolSequence& symbols);
+  Object::Reference readObject(SymbolSequence& symbols, std::string const& type);
   void printObject(Object& object, std::ostream& out = std::cout, int level = 0);
   void printValue(Value const& value, std::ostream& out = std::cout, int level = 0);
-  void skipComment(std::istream& stream);
 }
 
 
@@ -21,130 +22,78 @@ std::string qmlon::Value::str() const
   return ss.str();
 }
 
-std::string qmlon::readString(std::istream& stream)
+qmlon::Value::List qmlon::readList(SymbolSequence& symbols)
 {
-  std::ostringstream buffer;
-  bool escape = false;
-  char c = '\0';
-
-  while(stream.get(c) && (escape || c != '"'))
+  Symbol symbol = symbols.front();
+  if(symbol.type != LIST_START)
   {
-    if(c == '\\' && !escape)
-    {
-      escape = true;
-      continue;
-    }
-
-    buffer << c;
+    std::ostringstream ss;
+    ss << "ERROR: Expected [ at line " << symbol.position.line + 1 << " character " << symbol.position.lineCharacter + 1;
+    throw std::runtime_error(ss.str());
   }
 
-  return buffer.str();
-}
-
-qmlon::Value::List qmlon::readList(std::istream& stream)
-{
+  symbols.pop_front();
   Value::List list;
-  char c = '\0';
 
-  while(stream.get(c) && c != ']')
+  while(symbols.front().type != LIST_END)
   {
-    if(isspace(c) || c == ',')
+    if(symbols.front().type == VALUE_SEPARATOR)
     {
-      continue;
+      symbols.pop_front();
     }
-    else if(c == '/' && stream.peek() == '*')
-    {
-      stream.get();
-      skipComment(stream);
-    }
-    else
-    {
-      stream.putback(c);
-      auto v = readValue(stream);
-      list.push_back(v);
-    }
+    
+    auto v = readValue(symbols);
+    list.push_back(v);
   }
 
-  stream.get(c);
+  symbols.pop_front();
   return list;
 }
 
 qmlon::Value::Reference qmlon::readValue(std::istream& stream)
 {
-  std::ostringstream buffer;
-  bool canBeInteger = true;
-  bool canBeFloat = false;
-  char c = '\0';
+  SymbolSequence symbols = lex(stream);
+  return readValue(symbols);
+}
 
-  while(stream.get(c))
+qmlon::Value::Reference qmlon::readValue(SymbolSequence& symbols) 
+{
+  Symbol symbol = symbols.front();
+  
+  if(symbol.type == IDENTIFIER)
   {
-    if(std::isblank(c))
-    {
-      // tab or space
-      continue;
-    }
-    else if(std::isspace(c) || c == ',')
-    {
-      // line break or comma
-      break;
-    }
-    else if(c == '"')
-    {
-      return Value::Reference(new StringValue(readString(stream)));
-    }
-    else if(c == '[')
-    {
-      return Value::Reference(new ListValue(readList(stream)));
-    }
-    else if(c == '{')
-    {
-      return Value::Reference(new ObjectValue(readObject(buffer.str(), stream)));
-    }
-    else if(c == '}')
-    {
-      stream.putback(c);
-      break;
-    }
-    else if(c == '/' && stream.peek() == '*')
-    {
-      stream.get();
-      skipComment(stream);
-    }
-    else
-    {
-      if(!std::isdigit(c) && (c != '-' || buffer.str().size() != 0))
-      {
-        canBeInteger = false;
-        canBeFloat = (c == '.' && !canBeFloat);
-      }
-      buffer << c;
-    }
+    return Value::Reference(new ObjectValue(readObject(symbols)));
   }
-
-  std::string str = buffer.str();
-
-  if(str.empty())
+  else if(symbol.type == LIST_START)
   {
-    std::ostringstream ss;
-    ss << "ERROR: Invalid value: " << buffer.str();
-    throw std::runtime_error(ss.str());
+    return Value::Reference(new ListValue(readList(symbols)));
   }
-  else if(str == "true" || str == "false")
+  else if(symbol.type == INTEGER)
   {
-    return Value::Reference(new BooleanValue(str == "true"));
+    symbols.pop_front();
+    return Value::Reference(new IntegerValue(std::atoi(symbol.content.data())));
   }
-  else if(canBeInteger)
+  else if(symbol.type == FLOAT)
   {
-    return Value::Reference(new IntegerValue(std::atoi(str.data())));
+    symbols.pop_front();
+    return Value::Reference(new FloatValue(std::atof(symbol.content.data())));
   }
-  else if(canBeFloat)
+  else if(symbol.type == BOOLEAN)
   {
-    return Value::Reference(new FloatValue(std::atof(str.data())));
+    symbols.pop_front();
+    return Value::Reference(new BooleanValue(symbol.content == "true"));
+  }
+  else if(symbol.type == STRING)
+  {
+    symbols.pop_front();
+    // Remove quotes from string value
+    std::string stringValue = symbol.content.substr(1, symbol.content.length() - 2);
+    return Value::Reference(new StringValue(stringValue));
   }
   else
   {
     std::ostringstream ss;
-    ss << "ERROR: Invalid value: " << buffer.str();
+    ss << "ERROR: Invalid value at line " << symbol.position.line + 1 << " character " << symbol.position.lineCharacter + 1;
     throw std::runtime_error(ss.str());
   }
 }
@@ -161,39 +110,79 @@ qmlon::Value::Reference qmlon::readFile(std::string const& filename)
   return readValue(ss);
 }
 
-qmlon::Object::Reference qmlon::readObject(std::string const& type, std::istream& stream)
+qmlon::Object::Reference qmlon::readObject(SymbolSequence& symbols)
 {
+  std::string type;
+  Symbol symbol = symbols.front();
+  if(symbol.type == IDENTIFIER)
+  {
+    type = symbol.content;
+    symbols.pop_front();
+  }
+
+  return readObject(symbols, type);
+}
+
+qmlon::Object::Reference qmlon::readObject(SymbolSequence& symbols, std::string const& type)
+{
+  Symbol symbol = symbols.front();
+  
+  if(symbol.type != OBJECT_START)
+  {
+    std::ostringstream ss;
+    ss << "ERROR: Expected { at line " << symbol.position.line + 1 << " character " << symbol.position.lineCharacter + 1;
+    throw std::runtime_error(ss.str());
+  }
+  
+  // pop OBJECT_START
+  symbols.pop_front();
+  
   Object::Reference object(new Object);
   object->type = type;
-  std::ostringstream buffer;
-  char c = '\0';
 
-  while(stream.get(c) && c != '}')
+  while(symbols.front().type != OBJECT_END)
   {
-    if(std::isspace(c) || c == ',')
+    symbol = symbols.front();
+    
+    if(symbol.type == VALUE_SEPARATOR)
     {
-      continue;
+      symbols.pop_front();
+      symbol = symbols.front();
     }
-    if(c == ':')
+    
+    if(symbol.type == OBJECT_START)
     {
-      object->properties[buffer.str()] = readValue(stream);
-      buffer.str("");
+      object->children.push_back(readObject(symbols, ""));
     }
-    else if(c == '/' && stream.peek() == '*')
+    else if(symbol.type == IDENTIFIER)
     {
-      stream.get();
-      skipComment(stream);
-    }
-    else if(c == '{')
-    {
-      object->children.push_back(readObject(buffer.str(), stream));
-      buffer.str("");
-    }
-    else
-    {
-      buffer << c;
+      Symbol identifierSymbol = symbols.front();
+      
+      // pop IDENTIFIER
+      symbols.pop_front();
+      symbol = symbols.front();
+      
+      if(symbol.type == KEY_VALUE_SEPARATOR)
+      {
+        // pop KEY_VALUE_SEPARATOR
+        symbols.pop_front();
+        object->properties[identifierSymbol.content] = readValue(symbols);
+      }
+      else if(symbol.type == OBJECT_START)
+      {
+        object->children.push_back(readObject(symbols, identifierSymbol.content));
+      }
+      else
+      {
+        std::ostringstream ss;
+        ss << "ERROR: Expected property or child object at line " << symbol.position.line + 1 << " character " << symbol.position.lineCharacter + 1;
+        throw std::runtime_error(ss.str());
+      }
     }
   }
+  
+  // pop OBJECT_END
+  symbols.pop_front();
 
   return object;
 }
@@ -252,10 +241,4 @@ void qmlon::printValue(Value const& value, std::ostream& out, int level)
     }
     out << "]" << std::endl;
   }
-}
-
-void qmlon::skipComment(std::istream& stream)
-{
-  while(stream.get() != '*' || stream.peek() != '/');
-  stream.get();
 }
