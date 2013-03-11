@@ -60,7 +60,7 @@ qmlon::Value::Reference qmlon::readValue(SymbolSequence& symbols)
 {
   Symbol symbol = symbols.front();
   
-  if(symbol.type == IDENTIFIER)
+  if(symbol.type == IDENTIFIER || symbol.type == OBJECT_START)
   {
     return Value::Reference(new ObjectValue(readObject(symbols)));
   }

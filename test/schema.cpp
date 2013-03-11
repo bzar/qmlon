@@ -10,7 +10,6 @@ int main(int argc, char** argv)
 
   std::ifstream f("schema.qmlon");
   qmlon::Value::Reference schemaDocument = qmlon::readValue(f);
-  std::cout << schemaDocument->str() << std::endl;
 
   std::cout << "Creating schema document schema" << std::endl;
   qmlon::Schema schema = qmlon::Schema(schemaDocument);

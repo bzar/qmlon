@@ -1,7 +1,7 @@
 Sheet {
   image: "player.png"
   // a list of values
-  list: [1, 1.2, true, false, "bananas", Vec2D {x: 3, y: 14}, ""] 
+  list: [1, 1.2, true, false, "bananas", Vec2D {x: 3, y: 14}, "", {}] 
   Sprite {
     id: "player"
 
